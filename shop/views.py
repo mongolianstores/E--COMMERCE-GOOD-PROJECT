@@ -1,8 +1,17 @@
-from django.contrib import messages
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView, DetailView
-from .models import Item , OrderItem, Order
-from django.utils import timezone
+from    django.contrib                      import      messages
+from    django.core.exceptions              import      ObjectDoesNotExist
+from    django.contrib.auth.decorators      import      login_required
+from    django.contrib.auth.mixins          import      LoginRequiredMixin
+from    django.shortcuts                    import      render, get_object_or_404, redirect
+from    django.views.generic                import      ListView, DetailView, View
+from    django.utils                        import      timezone
+from    .models                             import      Item , OrderItem, Order
+
+
+
+
+
+
 
 
 class HomeView(ListView):
@@ -10,6 +19,22 @@ class HomeView(ListView):
     template_name = 'shop/home-page.html'
     #pagination
     paginate_by = 10
+
+
+
+class OrderSummaryView(LoginRequiredMixin, View):
+    
+    def get(self, *args, **kwargs):
+        try:
+            order = Order.objects.get(user=self.request.user, ordered=False)
+            context = { 'object': order }
+            template_name ='shop/order_summary.html'
+            return render(self.request,  template_name  , context)
+        except ObjectDoesNotExist:
+            messages.error(self.request, "You do not have an active order")
+            return redirect("/")
+        
+
 
 
 
@@ -28,6 +53,7 @@ def checkout(request):
 
 
 # add item to the cart
+@login_required
 def add_to_cart(request, slug=None):# slug of item add specific item 
     item = get_object_or_404(Item, slug=slug)
     
@@ -66,7 +92,7 @@ def add_to_cart(request, slug=None):# slug of item add specific item
 
 
 
-
+@login_required
 def remove_from_cart(request, slug):
     item = get_object_or_404(Item, slug=slug)
     
