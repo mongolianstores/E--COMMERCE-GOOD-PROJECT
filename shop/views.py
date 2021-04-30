@@ -76,18 +76,18 @@ def add_to_cart(request, slug=None):# slug of item add specific item
             order_item.quantity += 1
             order_item.save()
             messages.info(request, "This item quantity was updated.")
-            return redirect("shop:product", slug = slug)    
+            return redirect("shop:order-summary-view")    
         else:
             messages.info(request, "This item was added to your cart")
             order.items.add(order_item)
-            return redirect("shop:product", slug = slug)
+            return redirect("shop:order-summary-view")
     # if the order dont exits 
     else:
         ordered_date = timezone.now()
         order = Order.objects.create(user=request.user,  ordered_date= ordered_date)
         order.items.add(order_item )
         messages.info(request, "This item was added to your cart")
-    return redirect("shop:product", slug = slug)
+    return redirect("shop:order-summary-view")
 
 
 
@@ -110,6 +110,34 @@ def remove_from_cart(request, slug):
             order.items.remove(order_item) # then we remove it 
             messages.info(request, "This item was removed from your cart")
             return redirect("shop:product", slug = slug)
+        else:
+            messages.info(request, "This item was not in to your cart")
+            return redirect("shop:product", slug = slug)
+            
+    else:
+        messages.info(request, "You do not havean active order")
+        return redirect("shop:product", slug = slug)
+    
+
+
+
+@login_required
+def remove_single_item_from_cart(request, slug):
+    item = get_object_or_404(Item, slug=slug)
+    order_qs = Order.objects.filter(user=request.user, ordered=False)#   
+    if order_qs.exists(): # if it exist 
+        order = order_qs[0] # we grab that order
+    
+        if order.items.filter(item__slug=item.slug).exists():# we filter the order for that specif item slug
+            order_item = OrderItem.objects.filter(
+                item=item,
+                user= request.user,
+                ordered=False # no items has been purchased
+                )[0]
+            order_item.quantity -= 1
+            order_item.save()
+            messages.info(request, "This item quantity was updated")
+            return redirect("shop:order-summary-view")
         else:
             messages.info(request, "This item was not in to your cart")
             return redirect("shop:product", slug = slug)
