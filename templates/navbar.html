@@ -10,7 +10,7 @@
 
     <!-- Brand -->
     <a class="navbar-brand waves-effect" href="https://mdbootstrap.com/docs/jquery/" target="_blank">
-        <strong class="blue-text">E - COMMERCE</strong>
+        <strong class="blue-text">FRUIT AND VEGETABLE</strong>
     </a>
 
     <!-- Collapse -->
@@ -45,6 +45,7 @@
         <!-- Cart  user must be login to see the cart -->
         <ul class="navbar-nav nav-flex-icons">
             {% if request.user.is_authenticated %}
+            <h5 class="text-dark pt-2 pr-4 "> Welcome {{user.username}}</h5>
             <li class="nav-item">
                 <a href="{% url 'shop:order-summary-view' %}" class="nav-link waves-effect">
                     <span class="badge red z-depth-1 mr-1"> {{ request.user|cart_item_count }} </span>
@@ -52,24 +53,25 @@
                     <span class="clearfix d-none d-sm-inline-block"> Cart </span>
                 </a>
             </li>
+            
 
             <!-- logout -->
             <li class="nav-item">
                 <a class="nav-link waves-effect" href="{% url 'account_logout' %}">
-                    <span class="clearfix d-none d-sm-inline-block"> Logout </span>
+                    <span class="clearfix d-sm-inline-block"> Logout </span>
                 </a>
             </li>
 
             {% else %}
             <li class="nav-item">
                 <a class="nav-link waves-effect" href="{% url 'account_login' %}">
-                    <span class="clearfix d-none d-sm-inline-block"> Login </span>
+                    <span class="clearfix  d-sm-inline-block"> Login </span>
                 </a>
             </li>
 
             <li class="nav-item">
                 <a class="nav-link waves-effect" href="{% url 'account_signup' %}">
-                    <span class="clearfix d-none d-sm-inline-block"> Signup </span>
+                    <span class="clearfix  d-sm-inline-block"> Signup </span>
                 </a>
             </li>
             {% endif %}

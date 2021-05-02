@@ -1,23 +1,27 @@
 
 import os
+import configparser
+#from pathlib                           import Path
+from decouple                          import config
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+#Path
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+
 SECRET_KEY = 'qrcnuk0u$qj&6lm*_ft&5wdo)p=s4x&f3h$6ky#qte%sn)+c)%'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+
+
 DEBUG = True
 
 ALLOWED_HOSTS = []
 
 
-# Application definition
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -28,6 +32,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     'shop',
+    'blog',
+    
     
     # 3rd party app 
     'django.contrib.sites',
@@ -35,10 +41,23 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+
+    'django_countries',
     
-    'debug_toolbar',
+
     'crispy_forms',
 ]
+
+
+
+LOGIN_REDIRECT_URL ='/'
+
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'
+
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -49,39 +68,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     
-    #enable debug tool_bar
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
-
-# DEBUG TOOLBAR SETTINGS
-DEBUG_TOOLBAR_PANELS = [
-    'debug_toolbar.panels.versions.VersionsPanel',
-    'debug_toolbar.panels.timer.TimerPanel',
-    'debug_toolbar.panels.settings.SettingsPanel',
-    'debug_toolbar.panels.headers.HeadersPanel',
-    'debug_toolbar.panels.request.RequestPanel',
-    'debug_toolbar.panels.sql.SQLPanel',
-    'debug_toolbar.panels.staticfiles.StaticFilesPanel',
-    'debug_toolbar.panels.templates.TemplatesPanel',
-    'debug_toolbar.panels.cache.CachePanel',
-    'debug_toolbar.panels.signals.SignalsPanel',
-    'debug_toolbar.panels.logging.LoggingPanel',
-    'debug_toolbar.panels.redirects.RedirectsPanel',
-    'debug_toolbar.panels.profiling.ProfilingPanel',
-]
-
-def show_toolbar(request):
-    return True
-
-DEBUG_TOOLBAR_CONFIG = {
-    'INTERCEPT_REDIRECTS'   : False,
-    'SHOW_TOOLBAR_CALLBACK' : show_toolbar,
-}
 
 
 
 ROOT_URLCONF = 'config.urls'
+
+
 
 TEMPLATES = [
     {
@@ -103,8 +97,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -113,9 +105,16 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
+CONFIG_DIR = os.path.join(BASE_DIR, 'config/')
 
+parser = configparser.ConfigParser()
+parser.read_file(open(os.path.join(CONFIG_DIR, 'app.ini')))
+
+DATABASES = {}
+
+
+
+# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -133,11 +132,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/3.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE       = 'Africa/Johannesburg'
 
 USE_I18N = True
 
@@ -147,8 +144,6 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.0/howto/static-files/
-
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
@@ -170,10 +165,20 @@ AUTHENTICATION_BACKENDS = [
     
 ]
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
+ACCOUNT_SESSION_REMEMBER = True
+ACCOUNT_AUTHENTICATION_METHOD = 'email' # login with email 
+ACCOUNT_UNIQUE_EMAIL = True
+
+
 SITE_ID = 1
 
 
-LOGIN_REDIRECT_URL ='/'
 
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
+# STRIPE_PUBLISHABLE_KEY= 'pk_test_51I8IgYH5FGERXivQk0hNGJ6O1OiLqNez12vyz2gzqK80IjK5ujdfut2AaVttzV2FRKCzNqFyds1z6Ik5fFSbwrcW00zoTjorcD'
+# STRIPE_SECRET_KEY = 'sk_test_51I8IgYH5FGERXivQRzUk4tvuIbXhfQjKDZjxu0n8yNKrKyEvwZgPGWvAvbsE7gw1cyc5JzdfAnRhSLBUVFWDum6400wGnA5iuA'
 

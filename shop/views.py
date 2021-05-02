@@ -1,3 +1,5 @@
+
+from    django.conf                         import      settings
 from    django.contrib                      import      messages
 from    django.core.exceptions              import      ObjectDoesNotExist
 from    django.contrib.auth.decorators      import      login_required
@@ -5,8 +7,8 @@ from    django.contrib.auth.mixins          import      LoginRequiredMixin
 from    django.shortcuts                    import      render, get_object_or_404, redirect
 from    django.views.generic                import      ListView, DetailView, View
 from    django.utils                        import      timezone
-from    .models                             import      Item , OrderItem, Order
-
+from    .models                             import      Item , OrderItem, Order, BillingAddress, Payment
+from    .forms                              import      CheckoutForm
 
 
 
@@ -44,11 +46,60 @@ class ItemDetailView(DetailView):
 
 
 
-def checkout(request):
+
+class CheckoutView(View):
     
-    template_name ='shop/checkout-page.html'
-    context = {}
-    return render(request, template_name, context)
+    def  get(self, *args, **kwargs):
+        form =  CheckoutForm()
+        
+        template_name ='shop/checkout-page.html'
+        context = {'form': form }
+        return render(self.request, template_name, context)
+
+    def  post(self, *args, **kwargs):
+        form =  CheckoutForm(self.request.POST or None ) 
+        # print(self.request.POST)
+        try:
+            order = Order.objects.get(user=self.request.user, ordered=False)
+            if form.is_valid():
+                # clean data before saving them in database 
+                street_address = form.cleaned_data.get("street_address")
+                country = form.cleaned_data.get("country")
+                apartment_address = form.cleaned_data.get("apartment_address")
+                zip = form.cleaned_data.get("zip")
+                # TODO later 
+                # same_shipping_address = form.cleaned_data.get("same_billing_address")
+                # save_info = form.cleaned_data.get("save_info")
+                
+                billing_address = BillingAddress(
+                    user = self.request.user,
+                    street_address = street_address,
+                    apartment_address  = apartment_address, 
+                    country = country,  
+                    zip = zip,
+                    
+                )
+                
+                billing_address.save()
+                order.billing_address = billing_address
+                order.save()
+                
+            #     if payment_option == "S": #S stripe
+            #         return redirect('shop:payment', payment_option='stripe')
+            #     elif payment_option == "P": # P paypal
+            #         return redirect('shop:payment', payment_option='paypal')
+            # else:
+            #     messages.warning(self.request, "Invalid Payment option selected")
+            #     return redirect('shop:checkout')
+            
+                
+            messages.warning(self.request, "Failed Checkout")
+            return redirect('shop:checkout')
+        except ObjectDoesNotExist:
+            messages.error(self.request, "You do not have an active order")
+            return redirect("shope:order-summary-view")
+
+
 
 
 
@@ -109,7 +160,7 @@ def remove_from_cart(request, slug):
                 )[0]
             order.items.remove(order_item) # then we remove it 
             messages.info(request, "This item was removed from your cart")
-            return redirect("shop:product", slug = slug)
+            return redirect("shop:order-summary-view")
         else:
             messages.info(request, "This item was not in to your cart")
             return redirect("shop:product", slug = slug)
@@ -134,8 +185,14 @@ def remove_single_item_from_cart(request, slug):
                 user= request.user,
                 ordered=False # no items has been purchased
                 )[0]
-            order_item.quantity -= 1
-            order_item.save()
+            
+            # logic for minus must be 1 no less than that 
+            if order_item.quantity > 1:
+                order_item.quantity -= 1
+                order_item.save()
+            else:
+                order.items.remove(order_item)
+                
             messages.info(request, "This item quantity was updated")
             return redirect("shop:order-summary-view")
         else:

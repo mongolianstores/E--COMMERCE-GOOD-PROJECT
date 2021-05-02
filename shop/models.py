@@ -1,9 +1,9 @@
 from        django.conf             import      settings
 from        django.db               import      models
 from        django.shortcuts        import      reverse
-
-
-
+from        django.db.models        import      Sum
+#from        django_contries.fields    import      CountryField
+from        django_countries.fields import CountryField
 
 
 #its a tuple
@@ -31,7 +31,7 @@ class Item(models.Model):
     slug            = models.SlugField()
     image           = models.ImageField(upload_to='photo/')
     description     = models.TextField()
-    # quantity      = models.IntegerField(default=1)
+    
     
     
     
@@ -85,6 +85,10 @@ class Order(models.Model):
     items           = models.ManyToManyField(OrderItem)
     start_date      = models.DateTimeField(auto_now_add=True)
     ordered_date    = models.DateTimeField()
+    #billing address must be attache to the order
+    billing_address    = models.ForeignKey('BillingAddress', on_delete=models.SET_NULL, blank=True, null=True)
+    payment    = models.ForeignKey('Payment', on_delete=models.SET_NULL, blank=True, null=True)
+    
     
     def get_total(self):
         total = 0
@@ -94,4 +98,33 @@ class Order(models.Model):
     
     # def __str__(self):
     #     return self.user.email
+    
+
+class BillingAddress(models.Model):
+    user            = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    street_address = models.CharField(max_length=150)
+    apartment_address = models.CharField(max_length=150)
+    country = CountryField(multiple=False)
+    zip = models.CharField( max_length=150)
+    
+    def __str__(self):
+        return self.user.username
+    
+class Payment(models.Model):
+    stripe_charge_id = models.CharField(max_length=50)
+    user            = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
+    amount = models.FloatField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    
+    class Meta: # new
+        indexes = [models.Index(fields=['amount'])]
+        ordering = ['-amount']
+        verbose_name = 'Payment' # change inside when you fill in with data 
+        verbose_name_plural = 'Payment' # change naming plural ouside admin
+    
+    
+    def __str__(self):
+        return self.user.username
+    
     

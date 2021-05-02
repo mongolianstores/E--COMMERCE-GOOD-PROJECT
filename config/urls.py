@@ -11,7 +11,8 @@ from django.urls import path, include
 
 urlpatterns = [
     
-    path('', include("shop.urls")),
+    path('', include("shop.urls", namespace='shop')),
+    path('blog/', include("blog.urls", namespace='blog')),
     path('accounts/', include('allauth.urls')),
 
     

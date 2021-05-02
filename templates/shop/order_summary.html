@@ -44,6 +44,10 @@
                             {% else %}
                             <b>R</b> {{ order_item.get_total_item_price }}
                             {% endif %}
+                            <a href="{% url 'shop:remove-from-cart' order_item.item.slug %}">
+                                <i style="color: red" class="fas fa-trash float-right "> </i>
+                            </a>
+                            
                         </td>   
                     </tr>
 
